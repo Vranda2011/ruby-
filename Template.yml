@@ -1,0 +1,110 @@
+{
+  "outputs": {
+    "server_networks": {
+      "description": "The networks of the deployed server", 
+      "value": {
+        "get_attr": [
+          "server", 
+          "networks"
+        ]
+      }
+    }
+  }, 
+  "heat_template_version": "2013-05-23", 
+  "description": "Hello world HOT template that just defines a single server. Contains just base features to verify base HOT support.\n", 
+  "parameters": {
+    "key_name": {
+      "type": "string", 
+      "description": "Name of an existing key pair to use for the server", 
+      "constraints": [
+        {
+          "custom_constraint": "nova.keypair"
+        }
+      ]
+    }, 
+    "flavor": {
+      "default": "m1.small", 
+      "type": "string", 
+      "description": "Flavor for the server to be created", 
+      "constraints": [
+        {
+          "custom_constraint": "nova.flavor"
+        }
+      ]
+    }, 
+    "admin_pass": {
+      "hidden": true, 
+      "type": "string", 
+      "description": "Admin password", 
+      "constraints": [
+        {
+          "length": {
+            "max": 8, 
+            "min": 6
+          }, 
+          "description": "Password length must be between 6 and 8 characters"
+        }, 
+        {
+          "allowed_pattern": "[a-zA-Z0-9]+", 
+          "description": "Password must consist of characters and numbers only"
+        }, 
+        {
+          "allowed_pattern": "[A-Z]+[a-zA-Z0-9]*", 
+          "description": "Password must start with an uppercase character"
+        }
+      ]
+    }, 
+    "image": {
+      "type": "string", 
+      "description": "Image ID or image name to use for the server", 
+      "constraints": [
+        {
+          "custom_constraint": "glance.image"
+        }
+      ]
+    }, 
+    "db_port": {
+      "default": 50000, 
+      "type": "number", 
+      "description": "Database port number", 
+      "constraints": [
+        {
+          "range": {
+            "max": 60000, 
+            "min": 40000
+          }, 
+          "description": "Port number must be between 40000 and 60000"
+        }
+      ]
+    }
+  }, 
+  "resources": {
+    "server": {
+      "type": "OS::Nova::Server", 
+      "properties": {
+        "key_name": {
+          "get_param": "key_name"
+        }, 
+        "image": {
+          "get_param": "image"
+        }, 
+        "user_data": {
+          "str_replace": {
+            "params": {
+              "db_port": {
+                "get_param": "db_port"
+              }
+            }, 
+            "template": "#!/bin/bash\necho db_port\n"
+          }
+        }, 
+        "flavor": {
+          "get_param": "flavor"
+        }, 
+        "admin_pass": {
+          "get_param": "admin_pass"
+        }
+      }
+    }
+  }
+}
